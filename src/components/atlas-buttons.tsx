@@ -46,8 +46,8 @@ interface AtlasButtonsProps {
 export function AtlasButtons({ onUpgradeClick }: AtlasButtonsProps) {
   const { features: customerFeatures, isLoading } = useCustomerFeatures();
   
-  console.log('🔍 AtlasButtons - customerFeatures:', customerFeatures);
-  console.log('🔍 AtlasButtons - isLoading:', isLoading);
+  console.log('🔍 This user has access to: ', customerFeatures);
+
 
   if (isLoading) {
     return (

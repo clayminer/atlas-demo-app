@@ -22,15 +22,12 @@ async function getMockUserId(): Promise<string | null> {
     const cookieStore = await cookies();
     const authCookie = cookieStore.get('mock-auth-token');
     
-    console.log('🍪 Atlas Server - Auth cookie:', authCookie?.value);
     
     if (authCookie && authCookie.value.startsWith('mock-token-')) {
       const userId = authCookie.value.replace('mock-token-', '');
-      console.log('✅ Atlas Server - Extracted userId from cookie:', userId);
       return userId;
     }
 
-    console.log('❌ Atlas Server - No valid auth found');
     return null;
   } catch (error) {
     console.error('❌ Atlas Server - Error getting mock user ID:', error);
