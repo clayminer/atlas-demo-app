@@ -8,8 +8,6 @@ async function getMockUserId(): Promise<string | null> {
     const headersList = await headers();
     const authHeader = headersList.get('authorization');
     
-    console.log('🔍 Atlas Server - getMockUserId called');
-    console.log('🔍 Atlas Server - Auth header:', authHeader);
     
     if (authHeader && authHeader.startsWith('Bearer mock-token-')) {
       // Extract user ID from mock token
