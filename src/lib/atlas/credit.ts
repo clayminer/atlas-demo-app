@@ -1,15 +1,28 @@
 import type {
   CustomerFeature,
   PricingModel,
-  PricingModelEntitlement,
-  PricingModelPlan,
-  PricingModelPlanEntitlement,
-  PricingModelPlanEntitlementPrice,
   User,
 } from "@runonatlas/react";
 
 export const AI_INSIGHTS_FEATURE_SLUG = "ai-insights";
 export const AI_INSIGHTS_PRICING_UNIT_ID = "ai-credits";
+
+type PricingModelEntitlement = NonNullable<NonNullable<PricingModel["entitlements"]>[number]>;
+type PricingModelPlan = NonNullable<NonNullable<PricingModel["plans"]>[number]>;
+type PricingModelPlanEntitlement = NonNullable<NonNullable<PricingModelPlan["entitlements"]>[number]>;
+type PricingModelPlanEntitlementPrice = PricingModelPlanEntitlement["price"];
+
+function getCrossEnvironmentId(value: unknown): string | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const candidate = (value as { crossEnvironmentId?: unknown }).crossEnvironmentId;
+  return typeof candidate === "string" && candidate.length > 0 ? candidate : undefined;
+}
+
+function getInternalId(value: unknown): string | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const candidate = (value as { internalId?: unknown }).internalId;
+  return typeof candidate === "string" && candidate.length > 0 ? candidate : undefined;
+}
 
 function extractPriceValue(price?: PricingModelPlanEntitlementPrice | null): number | null {
   if (!price) {
@@ -57,11 +70,13 @@ function resolveFeatureMetadata(
   if (entitlementFromPricing?.id) {
     entitlementCandidates.add(entitlementFromPricing.id);
   }
-  if (entitlementFromPricing?.crossEnvironmentId) {
-    entitlementCandidates.add(entitlementFromPricing.crossEnvironmentId);
+  const entitlementCrossEnvId = getCrossEnvironmentId(entitlementFromPricing);
+  if (entitlementCrossEnvId) {
+    entitlementCandidates.add(entitlementCrossEnvId);
   }
-  if (feature?.internalId) {
-    entitlementCandidates.add(feature.internalId);
+  const featureInternalId = getInternalId(feature);
+  if (featureInternalId) {
+    entitlementCandidates.add(featureInternalId);
   }
   if (feature?.id) {
     entitlementCandidates.add(feature.id);
@@ -121,8 +136,9 @@ function collectActivePlanIds(customerInfo?: User | null) {
     if (plan.id) {
       activePlanIds.add(plan.id);
     }
-    if (plan.crossEnvironmentId) {
-      activePlanIds.add(plan.crossEnvironmentId);
+    const crossEnvId = getCrossEnvironmentId(plan);
+    if (crossEnvId) {
+      activePlanIds.add(crossEnvId);
     }
   }
   return activePlanIds;
@@ -135,8 +151,11 @@ function findMatchingAllocation(
   let customPricingUnitId: string | undefined;
   const hasEntitlement = plan.entitlements?.some((entitlement: PricingModelPlanEntitlement) => {
     if (entitlementIds.has(entitlement.id)) {
-      if (entitlement.customPricingUnitId) {
-        customPricingUnitId = entitlement.customPricingUnitId;
+      if (
+        "customPricingUnitId" in entitlement &&
+        typeof (entitlement as { customPricingUnitId?: unknown }).customPricingUnitId === "string"
+      ) {
+        customPricingUnitId = (entitlement as { customPricingUnitId: string }).customPricingUnitId;
       }
       return true;
     }
@@ -191,7 +210,7 @@ export function findFeatureCreditAllocation({
   }
 
   for (const plan of pricingModel.plans ?? []) {
-    const planIdentifier = plan.id || plan.crossEnvironmentId;
+    const planIdentifier = plan.id || getCrossEnvironmentId(plan);
     if (!planIdentifier || !activePlanIds.has(planIdentifier)) {
       continue;
     }

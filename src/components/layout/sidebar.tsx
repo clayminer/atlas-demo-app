@@ -12,7 +12,7 @@ type NavItem = {
 };
 
 type SidebarProps = {
-  items: NavItem[];
+  items: readonly NavItem[];
 };
 
 export function Sidebar({ items }: SidebarProps) {

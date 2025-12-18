@@ -212,7 +212,7 @@ export function LeadGenAgentCard({ className }: { className?: string }) {
           <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {setupError}
             <div className="mt-2 text-xs text-destructive/80">
-              <Button asChild size="xs" variant="secondary" className="bg-background">
+              <Button asChild size="sm" variant="secondary" className="bg-background">
                 <Link href="/pricing">View pricing options</Link>
               </Button>
             </div>
